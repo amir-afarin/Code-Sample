@@ -1,0 +1,27 @@
+- name: bootstrap VPN server
+  block:
+    - name: playbook for prepare OS and install required service and package
+      import_tasks: OS-pre-installation.yml
+
+    - name: playbook configuring CA server and gen cert,key for server
+      import_tasks: Service-Cert-config.yml
+
+    - name: create Openvpn server Configuring file for {{ VPN_mode }} mode
+      import_tasks: Service-opvpn-server-{{ VPN_mode }}.yml    
+
+    - name: Flush Handlers
+      meta: flush_handlers
+  when: > 
+    VPN_action == "bootstrap"
+
+
+- name: create user
+  block:
+    - name: playbook openvpn-CUser-{{ VPN_mode }}
+      import_tasks: openvpn-CUser-{{ VPN_mode }}.yml
+    
+    - name: playbook user-{{ VPN_mode }} mode client OVPN configuration file
+      import_tasks: service-opvpn-client-{{ VPN_mode }}.yml
+      
+  when: > 
+    VPN_action == "create_user"
